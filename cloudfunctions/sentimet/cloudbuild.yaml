@@ -11,7 +11,7 @@ steps:
     # cp -r $(pwd)/utils ./ 
     cp -r $(pwd)/utils ./cloudfunctions/sentimet/utils
 
-    cd cloudfunctions/summary/
+    cd cloudfunctions/sentimet/
     ls -la
     # Deploy the summary function
     gcloud functions deploy sentiment_function \
