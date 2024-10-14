@@ -8,7 +8,8 @@ steps:
   - |
     # Copy the 'utils' folder to the 'summary' folder
     # cp -r ../../utils ./ 
-    cp -r $(pwd)/utils ./ 
+    # cp -r $(pwd)/utils ./ 
+    cp -r $(pwd)/utils/* ./cloudfunctions/summary/
 
     cd cloudfunctions/summary/
     ls -la
