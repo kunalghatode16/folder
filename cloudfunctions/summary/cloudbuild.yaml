@@ -10,6 +10,7 @@ steps:
     # cp -r ../../utils ./ 
     cp -r $(pwd)/utils ./ 
 
+    cd cloudfunctions/summary/
     ls -la
     # Deploy the summary function
     gcloud functions deploy summary_function \
