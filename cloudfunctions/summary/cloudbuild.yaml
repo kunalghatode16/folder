@@ -7,7 +7,8 @@ steps:
   - '-c'
   - |
     # Copy the 'utils' folder to the 'summary' folder
-    cp -r ../../utils ./ 
+    # cp -r ../../utils ./ 
+    cp -r $(pwd)/utils ./ 
 
     # Deploy the summary function
     gcloud functions deploy summary_function \
