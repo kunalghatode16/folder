@@ -15,6 +15,7 @@ steps:
     # Deploy the summary function
     gcloud functions deploy summary_function \
       --runtime python310 \
+      --entry-point hello_world \
       --trigger-http \
       --region us-central1 \
       --source ./
