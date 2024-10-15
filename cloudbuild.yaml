@@ -3,19 +3,22 @@ options:
 steps:
   # Check for changes in the summary function
   - name: 'gcr.io/cloud-builders/git'
+    id: check-summary
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/summary || git diff --quiet HEAD~1 HEAD -- utils; then
+        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/summary && git diff --quiet HEAD~1 HEAD -- utils; then
           echo "No changes in 'summary' or 'utils', skipping deployment."
           exit 0
         fi
-        echo "Changes detected in 'summary' or 'utils'. Proceeding with deployment."
+        echo "Changes detected in 'summary' or 'utils'. Proceeding with deployment of summary function."
 
   # Deploy summary cloud function if there are changes
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: deploy-summary
     entrypoint: 'bash'
+    waitFor: ['check-summary']
     args:
       - '-c'
       - |
@@ -30,19 +33,22 @@ steps:
 
   # Check for changes in the sentiment function
   - name: 'gcr.io/cloud-builders/git'
+    id: check-sentiment
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentimet || git diff --quiet HEAD~1 HEAD -- utils; then
+        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentimet && git diff --quiet HEAD~1 HEAD -- utils; then
           echo "No changes in 'sentiment' or 'utils', skipping deployment."
           exit 0
         fi
-        echo "Changes detected in 'sentiment' or 'utils'. Proceeding with deployment."
+        echo "Changes detected in 'sentiment' or 'utils'. Proceeding with deployment of sentiment function."
 
   # Deploy sentiment cloud function if there are changes
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: deploy-sentiment
     entrypoint: 'bash'
+    waitFor: ['check-sentiment']
     args:
       - '-c'
       - |
