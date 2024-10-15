@@ -18,14 +18,13 @@ steps:
       - '-c'
       - |
         cd cloudfunctions/summary
-        pip install -r requirements.txt
         cp -r ../../utils .  # Copy utils to the function folder
         gcloud functions deploy summary \
-          --runtime python39 \
+          --runtime python310 \
+          --entry-point hello_world \
           --trigger-http \
-          --source=. \
-          --entry-point=main \
-          --allow-unauthenticated
+          --region us-central1 \
+          --source .
 
   # Check for changes in the sentiment function
   - name: 'gcr.io/cloud-builders/git'
@@ -33,7 +32,7 @@ steps:
     args:
       - '-c'
       - |
-        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentiment || git diff --quiet HEAD~1 HEAD -- utils; then
+        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentimet || git diff --quiet HEAD~1 HEAD -- utils; then
           echo "No changes in 'sentiment' or 'utils', skipping deployment."
           exit 0
         fi
@@ -45,14 +44,13 @@ steps:
     args:
       - '-c'
       - |
-        cd cloudfunctions/sentiment
-        pip install -r requirements.txt
+        cd cloudfunctions/sentimet
         cp -r ../../utils .  # Copy utils to the function folder
         gcloud functions deploy sentiment \
-          --runtime python39 \
+          --runtime python310 \
+          --entry-point hello_world \
           --trigger-http \
-          --source=. \
-          --entry-point=main \
-          --allow-unauthenticated
+          --region us-central1 \
+          --source .
 
 timeout: 1200s
