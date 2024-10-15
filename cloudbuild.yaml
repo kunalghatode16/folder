@@ -3,12 +3,12 @@ options:
 
 steps:
   # Fetch the full history to avoid shallow clone issues
-  - name: 'gcr.io/cloud-builders/git'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
-    args: ['git', 'fetch', '--unshallow']
+    args: ['-c', 'git fetch --unshallow']
 
   # Check for changes in the summary function
-  - name: 'gcr.io/cloud-builders/git'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: check-summary
     entrypoint: 'bash'
     args:
@@ -43,7 +43,7 @@ steps:
           --source .
 
   # Check for changes in the sentimet function
-  - name: 'gcr.io/cloud-builders/git'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: check-sentimet
     entrypoint: 'bash'
     args:
@@ -77,4 +77,4 @@ steps:
           --region us-central1 \
           --source .
 
-
+timeout: 1200s
