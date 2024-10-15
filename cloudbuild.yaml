@@ -1,5 +1,6 @@
 options:
   logging: CLOUD_LOGGING_ONLY
+
 steps:
   # Check for changes in the summary function
   - name: 'gcr.io/cloud-builders/git'
@@ -8,11 +9,12 @@ steps:
     args:
       - '-c'
       - |
-        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/summary && git diff --quiet HEAD~1 HEAD -- utils; then
-          echo "No changes in 'summary' or 'utils', skipping deployment."
+        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/summary; then
+          echo "No changes in 'summary', skipping deployment."
           exit 0
+        else
+          echo "Changes detected in 'summary'. Proceeding with deployment of summary function."
         fi
-        echo "Changes detected in 'summary' or 'utils'. Proceeding with deployment of summary function."
 
   # Deploy summary cloud function if there are changes
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -31,30 +33,31 @@ steps:
           --region us-central1 \
           --source .
 
-  # Check for changes in the sentiment function
+  # Check for changes in the sentimet function
   - name: 'gcr.io/cloud-builders/git'
-    id: check-sentiment
+    id: check-sentimet
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentimet && git diff --quiet HEAD~1 HEAD -- utils; then
-          echo "No changes in 'sentiment' or 'utils', skipping deployment."
+        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentimet; then
+          echo "No changes in 'sentimet', skipping deployment."
           exit 0
+        else
+          echo "Changes detected in 'sentimet'. Proceeding with deployment of sentimet function."
         fi
-        echo "Changes detected in 'sentiment' or 'utils'. Proceeding with deployment of sentiment function."
 
-  # Deploy sentiment cloud function if there are changes
+  # Deploy sentimet cloud function if there are changes
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: deploy-sentiment
+    id: deploy-sentimet
     entrypoint: 'bash'
-    waitFor: ['check-sentiment']
+    waitFor: ['check-sentimet']
     args:
       - '-c'
       - |
         cd cloudfunctions/sentimet
         cp -r ../../utils .  # Copy utils to the function folder
-        gcloud functions deploy sentiment \
+        gcloud functions deploy sentimet \
           --runtime python310 \
           --entry-point hello_world \
           --trigger-http \
