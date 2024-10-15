@@ -20,7 +20,7 @@ steps:
             echo "No changes in 'summary', skipping deployment."
             exit 0  # No changes, exit successfully
           else
-            echo "Changes detected in 'summary'. Proceeding with deployment."
+            echo "Changes detected in 'summary'."
             exit 1  # Indicate that there are changes
           fi
         else
@@ -32,11 +32,11 @@ steps:
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: deploy-summary
     entrypoint: 'bash'
-    waitFor: ['check-summary']
-    if: '$(steps.check-summary.exit_code) == 1'  # Deploy only if changes detected
+    waitFor: ['check-summary']  # Wait for check-summary to finish
     args:
       - '-c'
       - |
+        echo "Deploying 'summary' cloud function..."
         cd cloudfunctions/summary
         cp -r ../../utils .  # Copy utils to the function folder
         gcloud functions deploy summary \
@@ -59,7 +59,7 @@ steps:
             echo "No changes in 'sentimet', skipping deployment."
             exit 0  # No changes, exit successfully
           else
-            echo "Changes detected in 'sentimet'. Proceeding with deployment."
+            echo "Changes detected in 'sentimet'."
             exit 1  # Indicate that there are changes
           fi
         else
@@ -71,11 +71,11 @@ steps:
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: deploy-sentimet
     entrypoint: 'bash'
-    waitFor: ['check-sentimet']
-    if: '$(steps.check-sentimet.exit_code) == 1'  # Deploy only if changes detected
+    waitFor: ['check-sentimet']  # Wait for check-sentimet to finish
     args:
       - '-c'
       - |
+        echo "Deploying 'sentimet' cloud function..."
         cd cloudfunctions/sentimet
         cp -r ../../utils .  # Copy utils to the function folder
         gcloud functions deploy sentimet \
