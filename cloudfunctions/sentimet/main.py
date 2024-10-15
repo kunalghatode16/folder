@@ -1,2 +1,2 @@
 def hello_world(request):
-    return "checking edited sentiment"
+    return "checking sentimet"
