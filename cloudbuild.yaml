@@ -1,3 +1,5 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
 steps:
   # Check for changes in the summary function
   - name: 'gcr.io/cloud-builders/git'
