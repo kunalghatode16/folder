@@ -1,0 +1,58 @@
+steps:
+  # Check for changes in the summary function
+  - name: 'gcr.io/cloud-builders/git'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/summary || git diff --quiet HEAD~1 HEAD -- utils; then
+          echo "No changes in 'summary' or 'utils', skipping deployment."
+          exit 0
+        fi
+        echo "Changes detected in 'summary' or 'utils'. Proceeding with deployment."
+
+  # Deploy summary cloud function if there are changes
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd cloudfunctions/summary
+        pip install -r requirements.txt
+        cp -r ../../utils .  # Copy utils to the function folder
+        gcloud functions deploy summary \
+          --runtime python39 \
+          --trigger-http \
+          --source=. \
+          --entry-point=main \
+          --allow-unauthenticated
+
+  # Check for changes in the sentiment function
+  - name: 'gcr.io/cloud-builders/git'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentiment || git diff --quiet HEAD~1 HEAD -- utils; then
+          echo "No changes in 'sentiment' or 'utils', skipping deployment."
+          exit 0
+        fi
+        echo "Changes detected in 'sentiment' or 'utils'. Proceeding with deployment."
+
+  # Deploy sentiment cloud function if there are changes
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd cloudfunctions/sentiment
+        pip install -r requirements.txt
+        cp -r ../../utils .  # Copy utils to the function folder
+        gcloud functions deploy sentiment \
+          --runtime python39 \
+          --trigger-http \
+          --source=. \
+          --entry-point=main \
+          --allow-unauthenticated
+
+timeout: 1200s
