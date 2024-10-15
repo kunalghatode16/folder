@@ -14,22 +14,26 @@ steps:
     args:
       - '-c'
       - |
+        echo "Checking for changes in 'summary' folder..."
         if git rev-parse HEAD~1 >/dev/null 2>&1; then
           if git diff --quiet HEAD~1 HEAD -- cloudfunctions/summary; then
             echo "No changes in 'summary', skipping deployment."
-            exit 0
+            exit 0  # No changes, exit successfully
           else
             echo "Changes detected in 'summary'. Proceeding with deployment."
+            exit 1  # Indicate that there are changes
           fi
         else
-          echo "First commit or no previous commit. Proceeding with deployment."
+          echo "First commit or no previous commit, proceeding with deployment."
+          exit 1  # Indicate that there are changes
         fi
 
-  # Deploy summary cloud function if there are changes
+  # Deploy summary cloud function if there are changes (run only when check-summary exits with status 1)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: deploy-summary
     entrypoint: 'bash'
     waitFor: ['check-summary']
+    if: '$(steps.check-summary.exit_code) == 1'  # Deploy only if changes detected
     args:
       - '-c'
       - |
@@ -49,22 +53,26 @@ steps:
     args:
       - '-c'
       - |
+        echo "Checking for changes in 'sentimet' folder..."
         if git rev-parse HEAD~1 >/dev/null 2>&1; then
           if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentimet; then
             echo "No changes in 'sentimet', skipping deployment."
-            exit 0
+            exit 0  # No changes, exit successfully
           else
             echo "Changes detected in 'sentimet'. Proceeding with deployment."
+            exit 1  # Indicate that there are changes
           fi
         else
-          echo "First commit or no previous commit. Proceeding with deployment."
+          echo "First commit or no previous commit, proceeding with deployment."
+          exit 1  # Indicate that there are changes
         fi
 
-  # Deploy sentimet cloud function if there are changes
+  # Deploy sentimet cloud function if there are changes (run only when check-sentimet exits with status 1)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: deploy-sentimet
     entrypoint: 'bash'
     waitFor: ['check-sentimet']
+    if: '$(steps.check-sentimet.exit_code) == 1'  # Deploy only if changes detected
     args:
       - '-c'
       - |
