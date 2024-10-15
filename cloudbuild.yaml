@@ -2,6 +2,11 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
+  # Fetch the full history to avoid shallow clone issues
+  - name: 'gcr.io/cloud-builders/git'
+    entrypoint: 'bash'
+    args: ['git', 'fetch', '--unshallow']
+
   # Check for changes in the summary function
   - name: 'gcr.io/cloud-builders/git'
     id: check-summary
@@ -9,11 +14,15 @@ steps:
     args:
       - '-c'
       - |
-        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/summary; then
-          echo "No changes in 'summary', skipping deployment."
-          exit 0
+        if git rev-parse HEAD~1 >/dev/null 2>&1; then
+          if git diff --quiet HEAD~1 HEAD -- cloudfunctions/summary; then
+            echo "No changes in 'summary', skipping deployment."
+            exit 0
+          else
+            echo "Changes detected in 'summary'. Proceeding with deployment."
+          fi
         else
-          echo "Changes detected in 'summary'. Proceeding with deployment of summary function."
+          echo "First commit or no previous commit. Proceeding with deployment."
         fi
 
   # Deploy summary cloud function if there are changes
@@ -40,11 +49,15 @@ steps:
     args:
       - '-c'
       - |
-        if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentimet; then
-          echo "No changes in 'sentimet', skipping deployment."
-          exit 0
+        if git rev-parse HEAD~1 >/dev/null 2>&1; then
+          if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentimet; then
+            echo "No changes in 'sentimet', skipping deployment."
+            exit 0
+          else
+            echo "Changes detected in 'sentimet'. Proceeding with deployment."
+          fi
         else
-          echo "Changes detected in 'sentimet'. Proceeding with deployment of sentimet function."
+          echo "First commit or no previous commit. Proceeding with deployment."
         fi
 
   # Deploy sentimet cloud function if there are changes
@@ -64,4 +77,4 @@ steps:
           --region us-central1 \
           --source .
 
-timeout: 1200s
+
