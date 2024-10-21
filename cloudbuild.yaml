@@ -2,13 +2,13 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-  # Fetch the full history to avoid shallow clone issues
+  # Step 1: Fetch the full history to avoid shallow clone issues
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: fetch-history
     entrypoint: 'bash'
     args: ['-c', 'git fetch --unshallow']
 
-  # Check for changes in the summary function
+  # Step 2: Check for changes in the summary function
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: check-summary
     waitFor: ['fetch-history']  # Ensure this step waits for fetch-history
@@ -28,7 +28,7 @@ steps:
           echo "First commit or no previous commit, proceeding with deployment."
         fi
 
-  # Deploy summary cloud function only if no skip file exists
+  # Step 3: Deploy summary cloud function only if no skip file exists
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: deploy-summary
     waitFor: ['check-summary']  # Ensure this step waits for check-summary
@@ -55,10 +55,10 @@ steps:
             --source .
         fi
 
-  # Check for changes in the sentimet function
+  # Step 4: Check for changes in the sentimet function
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: check-sentimet
-    waitFor: ['deploy-summary']  # Ensure this step waits for deploy-summary
+    waitFor: ['deploy-summary']  # Ensure this step waits for deploy-summary to finish
     entrypoint: 'bash'
     args:
       - '-c'
@@ -75,7 +75,7 @@ steps:
           echo "First commit or no previous commit, proceeding with deployment."
         fi
 
-  # Deploy sentimet cloud function only if no skip file exists
+  # Step 5: Deploy sentimet cloud function only if no skip file exists
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: deploy-sentimet
     waitFor: ['check-sentimet']  # Ensure this step waits for check-sentimet
