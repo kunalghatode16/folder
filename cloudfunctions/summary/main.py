@@ -1,2 +1,2 @@
 def hello_world(request):
-    return "Hello, World! Checking function condition testing"
+    return "Hello, Kunal! Checking function condition testing"
