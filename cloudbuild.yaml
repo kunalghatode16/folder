@@ -39,11 +39,6 @@ steps:
         if [ -f /workspace/skip-summary ]; then
           echo "Skipping 'summary' deployment as no changes were detected."
         else
-          echo "Checking the status of the 'summary' cloud function before deploying..."
-          until gcloud functions describe summary --region us-central1 --format="value(status)" | grep -q "ACTIVE"; do
-            echo "Waiting for 'summary' function to become ACTIVE..."
-            sleep 10
-          done
           echo "Deploying 'summary' cloud function..."
           cd cloudfunctions/summary
           cp -r ../../utils .  # Copy utils to the function folder
@@ -86,11 +81,6 @@ steps:
         if [ -f /workspace/skip-sentimet ]; then
           echo "Skipping 'sentimet' deployment as no changes were detected."
         else
-          echo "Checking the status of the 'sentimet' cloud function before deploying..."
-          until gcloud functions describe sentimet --region us-central1 --format="value(status)" | grep -q "ACTIVE"; do
-            echo "Waiting for 'sentimet' function to become ACTIVE..."
-            sleep 10
-          done
           echo "Deploying 'sentimet' cloud function..."
           cd cloudfunctions/sentimet
           cp -r ../../utils .  # Copy utils to the function folder
