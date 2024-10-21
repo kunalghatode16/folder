@@ -4,14 +4,12 @@ options:
 steps:
   # Step 1: Fetch the full history to avoid shallow clone issues
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: fetch-history
     entrypoint: 'bash'
     args: ['-c', 'git fetch --unshallow']
 
   # Step 2: Check for changes in the summary function
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: check-summary
-    waitFor: ['fetch-history']  # Ensure this step waits for fetch-history
     entrypoint: 'bash'
     args:
       - '-c'
