@@ -18,33 +18,34 @@ steps:
         if git rev-parse HEAD~1 >/dev/null 2>&1; then
           if git diff --quiet HEAD~1 HEAD -- cloudfunctions/summary; then
             echo "No changes in 'summary', skipping deployment."
-            exit 0  # No changes, exit successfully
+            touch /workspace/skip-summary  # Create a skip file to indicate no changes
           else
             echo "Changes detected in 'summary'."
-            exit 1  # Indicate that there are changes
           fi
         else
           echo "First commit or no previous commit, proceeding with deployment."
-          exit 1  # Indicate that there are changes
         fi
 
-  # Deploy summary cloud function if there are changes (run only when check-summary exits with status 1)
+  # Deploy summary cloud function only if no skip file exists
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: deploy-summary
     entrypoint: 'bash'
-    waitFor: ['check-summary']  # Wait for check-summary to finish
     args:
       - '-c'
       - |
-        echo "Deploying 'summary' cloud function..."
-        cd cloudfunctions/summary
-        cp -r ../../utils .  # Copy utils to the function folder
-        gcloud functions deploy summary \
-          --runtime python310 \
-          --entry-point hello_world \
-          --trigger-http \
-          --region us-central1 \
-          --source .
+        if [ -f /workspace/skip-summary ]; then
+          echo "Skipping 'summary' deployment as no changes were detected."
+        else
+          echo "Deploying 'summary' cloud function..."
+          cd cloudfunctions/summary
+          cp -r ../../utils .  # Copy utils to the function folder
+          gcloud functions deploy summary \
+            --runtime python310 \
+            --entry-point hello_world \
+            --trigger-http \
+            --region us-central1 \
+            --source .
+        fi
 
   # Check for changes in the sentimet function
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -57,32 +58,33 @@ steps:
         if git rev-parse HEAD~1 >/dev/null 2>&1; then
           if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentimet; then
             echo "No changes in 'sentimet', skipping deployment."
-            exit 0  # No changes, exit successfully
+            touch /workspace/skip-sentimet  # Create a skip file to indicate no changes
           else
             echo "Changes detected in 'sentimet'."
-            exit 1  # Indicate that there are changes
           fi
         else
           echo "First commit or no previous commit, proceeding with deployment."
-          exit 1  # Indicate that there are changes
         fi
 
-  # Deploy sentimet cloud function if there are changes (run only when check-sentimet exits with status 1)
+  # Deploy sentimet cloud function only if no skip file exists
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: deploy-sentimet
     entrypoint: 'bash'
-    waitFor: ['check-sentimet']  # Wait for check-sentimet to finish
     args:
       - '-c'
       - |
-        echo "Deploying 'sentimet' cloud function..."
-        cd cloudfunctions/sentimet
-        cp -r ../../utils .  # Copy utils to the function folder
-        gcloud functions deploy sentimet \
-          --runtime python310 \
-          --entry-point hello_world \
-          --trigger-http \
-          --region us-central1 \
-          --source .
+        if [ -f /workspace/skip-sentimet ]; then
+          echo "Skipping 'sentimet' deployment as no changes were detected."
+        else
+          echo "Deploying 'sentimet' cloud function..."
+          cd cloudfunctions/sentimet
+          cp -r ../../utils .  # Copy utils to the function folder
+          gcloud functions deploy sentimet \
+            --runtime python310 \
+            --entry-point hello_world \
+            --trigger-http \
+            --region us-central1 \
+            --source .
+        fi
 
 timeout: 1200s
