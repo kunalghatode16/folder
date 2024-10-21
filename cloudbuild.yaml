@@ -4,51 +4,29 @@ options:
 steps:
   # Step 1: Fetch the full history to avoid shallow clone issues
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: fetch-history
     entrypoint: 'bash'
     args: ['-c', 'git fetch --unshallow']
 
-  # Step 2: Check for changes in the summary function
+  # Step 2: Check for changes in the summary function and utils folder
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: check-summary
-    waitFor: ['fetch-history']  # Ensure this step waits for fetch-history
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        echo "Checking for changes in 'summary' folder..."
+        echo "Checking for changes in 'summary' folder and 'utils' folder..."
         if git rev-parse HEAD~1 >/dev/null 2>&1; then
-          if git diff --quiet HEAD~1 HEAD -- cloudfunctions/summary; then
-            echo "No changes in 'summary', skipping deployment."
+          if git diff --quiet HEAD~1 HEAD -- cloudfunctions/summary || git diff --quiet HEAD~1 HEAD -- utils; then
+            echo "No changes in 'summary' or 'utils', skipping deployment."
             touch /workspace/skip-summary  # Create a skip file to indicate no changes
           else
-            echo "Changes detected in 'summary'."
+            echo "Changes detected in 'summary' or 'utils'."
           fi
         else
           echo "First commit or no previous commit, proceeding with deployment."
         fi
 
-  # Step 3: Check for changes in the utils folder (Trigger all deployments if changes are detected)
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: check-utils
-    waitFor: ['check-summary']
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        echo "Checking for changes in 'utils' folder..."
-        if git rev-parse HEAD~1 >/dev/null 2>&1; then
-          if git diff --quiet HEAD~1 HEAD -- utils; then
-            echo "No changes in 'utils', proceeding with individual deployments."
-          else
-            echo "Changes detected in 'utils'. Triggering deployments for both functions."
-            touch /workspace/deploy-all  # Create a deploy-all file to trigger all deployments
-          fi
-        else
-          echo "First commit or no previous commit, proceeding with individual deployments."
-        fi
-
-  # Step 4: Deploy summary cloud function only if no skip file exists
+  # Step 3: Deploy summary cloud function only if no skip file exists
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: deploy-summary
     waitFor: ['check-summary']  # Ensure this step waits for check-summary
@@ -79,10 +57,30 @@ steps:
           done
         fi
 
+  # Step 4: Check for changes in the sentimet function and utils folder
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: check-sentimet
+    waitFor: ['deploy-summary']  # Ensure this step waits for deploy-summary to finish
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Checking for changes in 'sentimet' folder and 'utils' folder..."
+        if git rev-parse HEAD~1 >/dev/null 2>&1; then
+          if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentimet || git diff --quiet HEAD~1 HEAD -- utils; then
+            echo "No changes in 'sentimet' or 'utils', skipping deployment."
+            touch /workspace/skip-sentimet  # Create a skip file to indicate no changes
+          else
+            echo "Changes detected in 'sentimet' or 'utils'."
+          fi
+        else
+          echo "First commit or no previous commit, proceeding with deployment."
+        fi
+
   # Step 5: Deploy sentimet cloud function only if no skip file exists
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: deploy-sentimet
-    waitFor: ['check-summary']  # Ensure this step waits for check-summary
+    waitFor: ['check-sentimet']  # Ensure this step waits for check-sentimet
     entrypoint: 'bash'
     args:
       - '-c'
@@ -105,54 +103,6 @@ steps:
               break
             else
               echo "Deployment failed, retrying in 30 seconds... ($i)"
-              sleep 30
-            fi
-          done
-        fi
-
-  # Step 6: Deploy both functions if utils changed
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: deploy-all
-    waitFor: ['check-utils']  # Ensure this step waits for check-utils
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        if [ -f /workspace/deploy-all ]; then
-          echo "Changes detected in 'utils'. Deploying both functions..."
-          
-          # Deploy the summary function
-          cd cloudfunctions/summary
-          cp -r ../../utils .  # Copy utils to the function folder
-          for i in {1..5}; do
-            if gcloud functions deploy summary \
-              --runtime python310 \
-              --entry-point hello_world \
-              --trigger-http \
-              --region us-central1 \
-              --source .; then
-              echo "Summary function deployment succeeded!"
-              break
-            else
-              echo "Summary function deployment failed, retrying in 30 seconds... ($i)"
-              sleep 30
-            fi
-          done
-          
-          # Deploy the sentimet function
-          cd ../sentimet
-          cp -r ../../utils .  # Copy utils to the function folder
-          for i in {1..5}; do
-            if gcloud functions deploy sentimet \
-              --runtime python310 \
-              --entry-point hello_world \
-              --trigger-http \
-              --region us-central1 \
-              --source .; then
-              echo "Sentimet function deployment succeeded!"
-              break
-            else
-              echo "Sentimet function deployment failed, retrying in 30 seconds... ($i)"
               sleep 30
             fi
           done
