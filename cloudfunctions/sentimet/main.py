@@ -1,2 +1,2 @@
 def hello_world(request):
-    return "checking sentimet conditions 1"
+    return "checking sentimet conditions"
