@@ -16,7 +16,7 @@ steps:
       - |
         echo "Checking for changes in 'summary' folder and 'utils' folder..."
         if git rev-parse HEAD~1 >/dev/null 2>&1; then
-          if git diff --quiet HEAD~1 HEAD -- cloudfunctions/summary || git diff --quiet HEAD~1 HEAD -- utils; then
+          if git diff --quiet HEAD~1 HEAD -- cloudfunctions/summary && git diff --quiet HEAD~1 HEAD -- utils; then
             echo "No changes in 'summary' or 'utils', skipping deployment."
             touch /workspace/skip-summary  # Create a skip file to indicate no changes
           else
@@ -67,7 +67,7 @@ steps:
       - |
         echo "Checking for changes in 'sentimet' folder and 'utils' folder..."
         if git rev-parse HEAD~1 >/dev/null 2>&1; then
-          if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentimet || git diff --quiet HEAD~1 HEAD -- utils; then
+          if git diff --quiet HEAD~1 HEAD -- cloudfunctions/sentimet && git diff --quiet HEAD~1 HEAD -- utils; then
             echo "No changes in 'sentimet' or 'utils', skipping deployment."
             touch /workspace/skip-sentimet  # Create a skip file to indicate no changes
           else
