@@ -1,2 +1,2 @@
 def hello_world(request):
-    return "Hello, Kunal 1! with utils"
+    return "Hello, Kunal! with utils"
