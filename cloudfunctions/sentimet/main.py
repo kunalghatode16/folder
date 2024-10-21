@@ -1,2 +1,2 @@
 def hello_world(request):
-    return "checking sentimet with utils"
+    return "pushing code from vs code"
