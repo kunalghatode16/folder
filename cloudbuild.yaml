@@ -40,24 +40,19 @@ steps:
           echo "Deploying 'summary' cloud function..."
           cd cloudfunctions/summary
           cp -r ../../utils .  # Copy utils to the function folder
-          # Check function status and deploy only if it's not deploying
-          while true; do
-            function_status=$(gcloud functions describe summary --region us-central1 --format="value(state)")
-            if [[ "$function_status" == "ACTIVE" ]]; then
-              echo "Function is active, proceeding with deployment."
-              gcloud functions deploy summary \
-                --runtime python310 \
-                --entry-point hello_world \
-                --trigger-http \
-                --region us-central1 \
-                --source .
+          # Retry logic if the function deployment fails due to queue error
+          for i in {1..5}; do
+            if gcloud functions deploy summary \
+              --runtime python310 \
+              --entry-point hello_world \
+              --trigger-http \
+              --region us-central1 \
+              --source .; then
+              echo "Deployment succeeded!"
               break
-            elif [[ "$function_status" == "DEPLOYING" || "$function_status" == "ROLLING" ]]; then
-              echo "Function is deploying or rolling out, waiting..."
-              sleep 30  # Wait for 30 seconds before retrying
             else
-              echo "Unknown function status: $function_status. Exiting."
-              exit 1
+              echo "Deployment failed, retrying in 30 seconds... ($i)"
+              sleep 30
             fi
           done
         fi
@@ -96,24 +91,19 @@ steps:
           echo "Deploying 'sentimet' cloud function..."
           cd cloudfunctions/sentimet
           cp -r ../../utils .  # Copy utils to the function folder
-          # Check function status and deploy only if it's not deploying
-          while true; do
-            function_status=$(gcloud functions describe sentimet --region us-central1 --format="value(state)")
-            if [[ "$function_status" == "ACTIVE" ]]; then
-              echo "Function is active, proceeding with deployment."
-              gcloud functions deploy sentimet \
-                --runtime python310 \
-                --entry-point hello_world \
-                --trigger-http \
-                --region us-central1 \
-                --source .
+          # Retry logic if the function deployment fails due to queue error
+          for i in {1..5}; do
+            if gcloud functions deploy sentimet \
+              --runtime python310 \
+              --entry-point hello_world \
+              --trigger-http \
+              --region us-central1 \
+              --source .; then
+              echo "Deployment succeeded!"
               break
-            elif [[ "$function_status" == "DEPLOYING" || "$function_status" == "ROLLING" ]]; then
-              echo "Function is deploying or rolling out, waiting..."
-              sleep 30  # Wait for 30 seconds before retrying
             else
-              echo "Unknown function status: $function_status. Exiting."
-              exit 1
+              echo "Deployment failed, retrying in 30 seconds... ($i)"
+              sleep 30
             fi
           done
         fi
