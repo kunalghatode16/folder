@@ -47,11 +47,6 @@ steps:
             --source .
         fi
 
-  # Introduce delay to avoid conflicts
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'bash'
-    args: ['sleep', '60']  # Sleep for 60 seconds
-
   # Check for changes in the sentimet function
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: check-sentimet
