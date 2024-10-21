@@ -39,27 +39,29 @@ steps:
         if [ -f /workspace/skip-summary ]; then
           echo "Skipping 'summary' deployment as no changes were detected."
         else
-          echo "Checking if any previous operation is still in progress for 'summary'..."
-          while true; do
-            status=$(gcloud functions describe summary --region us-central1 --format="value(status)")
-            if [[ "$status" == "ACTIVE" || "$status" == "INACTIVE" ]]; then
-              echo "'summary' function is ready for deployment (status: $status)."
-              break
-            else
-              echo "'summary' function is currently in status: $status. Waiting for it to complete..."
-              sleep 10
-            fi
-          done
-
           echo "Deploying 'summary' cloud function..."
           cd cloudfunctions/summary
           cp -r ../../utils .  # Copy utils to the function folder
-          gcloud functions deploy summary \
-            --runtime python310 \
-            --entry-point hello_world \
-            --trigger-http \
-            --region us-central1 \
-            --source .
+          # Check function status and deploy only if it's not deploying
+          while true; do
+            function_status=$(gcloud functions describe summary --region us-central1 --format="value(state)")
+            if [[ "$function_status" == "ACTIVE" ]]; then
+              echo "Function is active, proceeding with deployment."
+              gcloud functions deploy summary \
+                --runtime python310 \
+                --entry-point hello_world \
+                --trigger-http \
+                --region us-central1 \
+                --source .
+              break
+            elif [[ "$function_status" == "DEPLOYING" || "$function_status" == "ROLLING" ]]; then
+              echo "Function is deploying or rolling out, waiting..."
+              sleep 30  # Wait for 30 seconds before retrying
+            else
+              echo "Unknown function status: $function_status. Exiting."
+              exit 1
+            fi
+          done
         fi
 
   # Step 4: Check for changes in the sentimet function
@@ -93,27 +95,29 @@ steps:
         if [ -f /workspace/skip-sentimet ]; then
           echo "Skipping 'sentimet' deployment as no changes were detected."
         else
-          echo "Checking if any previous operation is still in progress for 'sentimet'..."
-          while true; do
-            status=$(gcloud functions describe sentimet --region us-central1 --format="value(status)")
-            if [[ "$status" == "ACTIVE" || "$status" == "INACTIVE" ]]; then
-              echo "'sentimet' function is ready for deployment (status: $status)."
-              break
-            else
-              echo "'sentimet' function is currently in status: $status. Waiting for it to complete..."
-              sleep 10
-            fi
-          done
-
           echo "Deploying 'sentimet' cloud function..."
           cd cloudfunctions/sentimet
           cp -r ../../utils .  # Copy utils to the function folder
-          gcloud functions deploy sentimet \
-            --runtime python310 \
-            --entry-point hello_world \
-            --trigger-http \
-            --region us-central1 \
-            --source .
+          # Check function status and deploy only if it's not deploying
+          while true; do
+            function_status=$(gcloud functions describe sentimet --region us-central1 --format="value(state)")
+            if [[ "$function_status" == "ACTIVE" ]]; then
+              echo "Function is active, proceeding with deployment."
+              gcloud functions deploy sentimet \
+                --runtime python310 \
+                --entry-point hello_world \
+                --trigger-http \
+                --region us-central1 \
+                --source .
+              break
+            elif [[ "$function_status" == "DEPLOYING" || "$function_status" == "ROLLING" ]]; then
+              echo "Function is deploying or rolling out, waiting..."
+              sleep 30  # Wait for 30 seconds before retrying
+            else
+              echo "Unknown function status: $function_status. Exiting."
+              exit 1
+            fi
+          done
         fi
 
 timeout: 1200s
