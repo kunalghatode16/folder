@@ -36,6 +36,29 @@ steps:
         if [ -f /workspace/skip-summary ]; then
           echo "Skipping 'summary' deployment as no changes were detected."
         else
+          echo "Checking the status of the 'summary' cloud function before deploying..."
+          max_attempts=6
+          attempt=1
+          backoff_time=10
+          while [ $attempt -le $max_attempts ]; do
+            status=$(gcloud functions describe summary --region us-central1 --format="value(status)")
+            if [ "$status" == "ACTIVE" ]; then
+              echo "'summary' function is ACTIVE. Proceeding with deployment."
+              break
+            elif [ "$status" == "DEPLOYING" ]; then
+              echo "'summary' function is currently DEPLOYING. Retrying in $backoff_time seconds..."
+            else
+              echo "'summary' function is in status: $status. Retrying in $backoff_time seconds..."
+            fi
+            sleep $backoff_time
+            attempt=$((attempt + 1))
+            backoff_time=$((backoff_time * 2))  # Exponential backoff
+            if [ $attempt -gt $max_attempts ]; then
+              echo "Maximum attempts reached. Exiting deployment."
+              exit 1
+            fi
+          done
+
           echo "Deploying 'summary' cloud function..."
           cd cloudfunctions/summary
           cp -r ../../utils .  # Copy utils to the function folder
@@ -76,6 +99,29 @@ steps:
         if [ -f /workspace/skip-sentimet ]; then
           echo "Skipping 'sentimet' deployment as no changes were detected."
         else
+          echo "Checking the status of the 'sentimet' cloud function before deploying..."
+          max_attempts=6
+          attempt=1
+          backoff_time=10
+          while [ $attempt -le $max_attempts ]; do
+            status=$(gcloud functions describe sentimet --region us-central1 --format="value(status)")
+            if [ "$status" == "ACTIVE" ]; then
+              echo "'sentimet' function is ACTIVE. Proceeding with deployment."
+              break
+            elif [ "$status" == "DEPLOYING" ]; then
+              echo "'sentimet' function is currently DEPLOYING. Retrying in $backoff_time seconds..."
+            else
+              echo "'sentimet' function is in status: $status. Retrying in $backoff_time seconds..."
+            fi
+            sleep $backoff_time
+            attempt=$((attempt + 1))
+            backoff_time=$((backoff_time * 2))  # Exponential backoff
+            if [ $attempt -gt $max_attempts ]; then
+              echo "Maximum attempts reached. Exiting deployment."
+              exit 1
+            fi
+          done
+
           echo "Deploying 'sentimet' cloud function..."
           cd cloudfunctions/sentimet
           cp -r ../../utils .  # Copy utils to the function folder
