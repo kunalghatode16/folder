@@ -49,7 +49,7 @@ steps:
               --region us-central1 \
               --source . \
               --set-env-vars ENV_VAR1=value1,ENV_VAR2=value2 \  # Environment variables
-              --memory=1 \                                   # Memory allocation
+              --memory=2 \                                   # Memory allocation
               --cpu=1 \
               --timeout=120s; then
               echo "Deployment succeeded!"
