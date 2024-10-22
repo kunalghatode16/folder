@@ -48,9 +48,10 @@ steps:
               --trigger-http \
               --region us-central1 \
               --source . \
-              --set-env-vars ENV_VAR1=value1,ENV_VAR2=value2 \ 
-              --memory=2GB \                                  
-              --timeout=120s; then
+              --set-env-vars ENV_VAR1=value1,ENV_VAR2=value2 \
+              --memory=2GB \
+              --timeout=120s \
+              --max-instances=1; then
               echo "Deployment succeeded!"
               break
             else
@@ -101,7 +102,11 @@ steps:
               --entry-point hello_world \
               --trigger-http \
               --region us-central1 \
-              --source .; then
+              --source . \
+              --set-env-vars ENV_VAR1=value1,ENV_VAR2=value2 \
+              --memory=2GB \
+              --timeout=120s \
+              --max-instances=1; then
               echo "Deployment succeeded!"
               break
             else
